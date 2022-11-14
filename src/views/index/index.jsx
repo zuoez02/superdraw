@@ -1,13 +1,10 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import { getCurrentWidgetId } from '../../common/utils';
-import Excalidraw, {
-  // exportToCanvas,
-  // exportToSvg,
-  // exportToBlob,
+import {
+  Excalidraw,
   languages,
   serializeAsJSON,
 } from "@excalidraw/excalidraw";
-// import { serializeAsJSON } from '@excalidraw/excalidraw';
 import { Icon } from 'react-kui';
 import initialData from "../../common/initialData";
 import { uploadFile, downloadFile, setWidgetAttr, getWidgetAttr } from "../../net/net_api";
@@ -93,8 +90,7 @@ const renderFooter = () => {
 
 export default function Index() {
   useEffect(() => {
-    console.log('感谢的Excalidraw和React KUI的支持！');
-    console.log('author: bearxz & github:https://github.com/bearxz! ');
+    console.log('author: zuoez02 & github:https://github.com/zuoez02 ');
   }, []);
   const excalidrawRef = useRef(null);
   // 设置视图模式
@@ -106,8 +102,7 @@ export default function Index() {
   // 设置主题
   const [theme, setTheme] = useState("light");
   // 语言设置
-  const [lang, setLang] = useState(navigator.language);
-
+  const [lang, setLang] = useState(navigator.language === 'zh' ? 'zh-CN' : navigator.language);
   // 获取挂件块ID
   const currentWidgetId = useMemo(() => getCurrentWidgetId(), []);
 
@@ -132,19 +127,26 @@ export default function Index() {
   }
 
   async function saveExcalidrawFile() {
-    const fileBlob = new Blob([serializeAsJSON(excalidrawRef.current.getSceneElements(), excalidrawRef.current.getAppState())], {
+    const json = serializeAsJSON(excalidrawRef.current.getSceneElements(), excalidrawRef.current.getAppState(), excalidrawRef.current.getFiles(), 'local');
+    const fileBlob = new Blob([json], {
       type: 'application/json'
     });
     const fileName = currentWidgetId + '.excalidraw';
     const file = new File([fileBlob], fileName);
-    const res = await uploadFile(file);
-    const fileMap = res.succMap[fileName];
-    // 获取返回后的地址，保存在挂件块的custom-excalidraw属性上
-    setWidgetAttr(currentWidgetId, {
-      "custom-excalidraw": fileMap,
-      "data-assets": fileMap,
-    });
-    excalidrawRef.current.setToastMessage('保存成功');
+    try {
+      const res = await uploadFile(file);
+      const fileMap = res.succMap[fileName];
+      // 获取返回后的地址，保存在挂件块的custom-excalidraw属性上
+      setWidgetAttr(currentWidgetId, {
+        "custom-excalidraw": fileMap,
+        "data-assets": fileMap,
+      });
+      excalidrawRef.current.setToast({ message: '保存成功' });
+    } catch (e) {
+      excalidrawRef.current.setToast({ message: '保存失败' });
+      console.error(e);
+    }
+
   }
 
   useEffect(() => {
@@ -153,7 +155,6 @@ export default function Index() {
       const data = await getWidgetAttr(currentWidgetId);
       const excalidrawFileName = data['custom-excalidraw'];
       if (excalidrawFileName) {
-        console.log(excalidrawFileName)
         downloadFile(excalidrawFileName).then(res => {
           setSavedData(res);
           setInitialized(true);

@@ -1,7 +1,7 @@
 let self = window || global;
 export function getCurrentEnv() {
     try {
-      let s = self.parent?.document;
+      // let s = self.parent?.document;
     } catch (e) {
       // 处于非同源 iframe，无法探知当前环境
       return CURRENT_ENV.unknown;

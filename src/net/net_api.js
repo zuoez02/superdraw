@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { post, get } from './request';
+import { post } from './request';
 
 // 上传资源文件
 export const uploadFile = async (files, path = '/assets/') => {
@@ -7,14 +7,14 @@ export const uploadFile = async (files, path = '/assets/') => {
     formData.append('assetsDirPath', path);
     formData.append('file[]', files);
     try {
-        const res = await post('/api/asset/upload',formData, {
+        const res = await post('/api/asset/upload', formData, {
             "Content-Type": "multipart/form-data; boundary=----WebKitFormBoundarywQfr1gRNyYgeIt9h",
         });
         return res.data;
     } catch (e) {
         return e;
     }
-    
+
 };
 
 // 下载文件
@@ -35,7 +35,7 @@ export const setWidgetAttr = async (id, attrs) => {
     } catch (e) {
         return e;
     }
-    
+
 };
 
 // custom-excalidraw: '',
@@ -51,5 +51,5 @@ export const getWidgetAttr = async (id) => {
     } catch (e) {
         return e;
     }
-    
+
 };
