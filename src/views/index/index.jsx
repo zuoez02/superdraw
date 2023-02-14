@@ -2,14 +2,13 @@ import React, { useEffect, useState, useRef, useMemo } from "react";
 import { getCurrentWidgetId } from '../../common/utils';
 import {
   Excalidraw,
-  // languages,
   serializeAsJSON,
 } from "@excalidraw/excalidraw";
 import { Icon } from 'react-kui';
 import initialData from "../../common/initialData";
 import {setWidgetAttr, getWidgetAttr } from "../../net/net_api";
 import "./index.css";
-// import Json from "bfj";
+import {debounce} from "lodash";
 
 const getDate = () => {
   const date = new Date();
@@ -31,46 +30,7 @@ const renderTopRightUI = (theme, grid, view, {
     <div
       className="excalidraw_top-right_wrap"
     >
-      {/*<div>*/}
-      {/*  <select*/}
-      {/*    defaultValue={navigator.language}*/}
-      {/*    className="excalidraw_top-right_select"*/}
-      {/*    onChange={(e) => {*/}
-      {/*      onLanguage(e.target.value);*/}
-      {/*    }}*/}
-      {/*  >*/}
-      {/*    {*/}
-      {/*      languages.map(item => {*/}
-      {/*        return (*/}
-      {/*          <option key={item.code} value={item.code}>{item.label}</option>*/}
-      {/*        );*/}
-      {/*      })*/}
-      {/*    }*/}
-      {/*  </select>*/}
-      {/*  <button className="excalidraw_top-right_button" onClick={() => window.open("https://excalidraw.com/", "_blank")}>*/}
-      {/*    excalidraw*/}
-      {/*  </button>*/}
-      {/*</div>*/}
       <div className="excalidraw_top-right_function">
-        {/*<div title="视图模式" onClick={() => { setView() }}>*/}
-        {/*  {*/}
-        {/*    view ? <Icon type="eye" size="18" /> : <Icon type="eye-outline" size="18" />*/}
-        {/*  }*/}
-        {/*</div>*/}
-        {/*<div title="主题" onClick={() => { setTheme() }}>*/}
-        {/*  {*/}
-        {/*    theme === 'light' ? <Icon type="contrast-outline" size="18" />*/}
-        {/*      : <Icon type="contrast" size="18" />*/}
-        {/*  }*/}
-        {/*</div>*/}
-        {/*/!* <div onClick={() => {setZen()}}>*/}
-        {/*  <Icon type="code-outline" size="18" />*/}
-        {/*</div> *!/*/}
-        {/*<div title="网格模式" onClick={() => { setGrid() }}>*/}
-        {/*  {*/}
-        {/*    grid ? <Icon type="grid" size="18" /> : <Icon type="grid-outline" size="18" />*/}
-        {/*  }*/}
-        {/*</div>*/}
         <div title="保存" onClick={() => {
           // TODO: 归档保存
           saveFile();
@@ -90,9 +50,6 @@ const renderFooter = () => {
 };
 
 export default function Index() {
-  useEffect(() => {
-    console.log('author: zuoez02 & github:https://github.com/zuoez02 ');
-  }, []);
   const excalidrawRef = useRef(null);
   // 设置视图模式
   const [viewModeEnabled, setViewModeEnabled] = useState(false);
@@ -113,6 +70,47 @@ export default function Index() {
   const [initialized, setInitialized] = useState(false);
 
   const [isFullScreen, setisFullScreen] = useState(false);
+
+  function StringtoJson(excalidrawData) {
+    return new Promise((resolve)=>{
+      resolve(JSON.parse(excalidrawData))
+    });
+  };
+
+  async function saveExcalidrawFile_without_notification() {
+    console.log("Debounce");
+    if (currentWidgetId===undefined){
+      const search = window.location.search;
+      currentWidgetId = search.split("=")[1];
+    };
+    const json = serializeAsJSON(excalidrawRef.current.getSceneElements(), excalidrawRef.current.getAppState(), excalidrawRef.current.getFiles(), 'local');
+    try {
+      // 获取返回后的地址，保存在挂件块的custom-excalidraw属性上
+      setWidgetAttr(currentWidgetId, {
+        "custom-excalidraw-data": json,
+      });
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+
+  const debounce_fun = debounce(saveExcalidrawFile_without_notification,1000);
+
+  useEffect(()=>{
+    window.addEventListener('pointerup',debounce_fun)
+    return ()=>{
+      window.removeEventListener('pointerup',debounce_fun)
+
+    }
+  });
+
+  // useEffect(()=>{
+  //   const interval = setInterval(()=>{
+  //     saveExcalidrawFile_without_notification();
+  //   },30000);
+  //   return ()=>clearInterval(interval);
+  // });
 
   async function toggleFullscreen() {
     const el = document.getElementsByClassName('excalidraw-wrapper')[0];
@@ -140,14 +138,11 @@ export default function Index() {
 
     if (currentWidgetId===undefined){
       const search = window.location.search;
-      // console.log("Search!!!!");
       currentWidgetId = search.split("=")[1];
     };
     const json = serializeAsJSON(excalidrawRef.current.getSceneElements(), excalidrawRef.current.getAppState(), excalidrawRef.current.getFiles(), 'local');
-    // console.log(` Json is ${json}`);
 
     try {
-      // const temp = JSON.stringify(json);
       // 获取返回后的地址，保存在挂件块的custom-excalidraw属性上
       setWidgetAttr(currentWidgetId, {
         "custom-excalidraw-data": json,
@@ -160,25 +155,18 @@ export default function Index() {
 
   }
 
+
   useEffect(() => {
-    function StringtoJson(excalidrawData) {
-      return new Promise((resolve)=>{
-          resolve(JSON.parse(excalidrawData))
-      });
-    };
     async function getExcalidrawFile() {
       // 获取挂件的custom-excalidraw属性
       let block_data;
       if (currentWidgetId===undefined){
         const search = window.location.search;
-        // console.log("Search!!!!")
         currentWidgetId = search.split("=")[1];
       }
       block_data = await getWidgetAttr(currentWidgetId);
 
       const excalidrawData = block_data['custom-excalidraw-data'];
-      // console.log(`Block data ${excalidrawData}`);
-
       if (excalidrawData) {
         StringtoJson(excalidrawData).then(res => {
           setSavedData(res);
@@ -188,8 +176,6 @@ export default function Index() {
         setInitialized(true);
       }
     }
-
-
     getExcalidrawFile();
   }, [currentWidgetId]);
 
@@ -200,7 +186,6 @@ export default function Index() {
         {(initialized && <Excalidraw
           ref={excalidrawRef}
           initialData={savedData}
-          // onLibraryChange={() => {console.log('hello woeld')}}
           viewModeEnabled={viewModeEnabled}
           zenModeEnabled={zenModeEnabled}
           gridModeEnabled={gridModeEnabled}
