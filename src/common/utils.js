@@ -9,7 +9,6 @@ export const getCurrentWidgetId = () => {
         return self.frameElement?.parentElement?.parentElement?.dataset.nodeId;
     } else if (env === CURRENT_ENV.unknown) {
     } else {
-
+        return null;
     }
-    return undefined;
 };

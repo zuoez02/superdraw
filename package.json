@@ -1,10 +1,10 @@
 {
   "name": "excalidraw_widget_v2",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "dependencies": {
     "@babel/core": "7.12.3",
-    "@excalidraw/excalidraw": "^0.13.0",
+    "@excalidraw/excalidraw": "^0.14.2",
     "@pmmmwh/react-refresh-webpack-plugin": "0.4.3",
     "@svgr/webpack": "5.5.0",
     "@testing-library/jest-dom": "^5.11.4",
@@ -43,6 +43,7 @@
     "jest-resolve": "26.6.0",
     "jest-watch-typeahead": "0.6.1",
     "kui-icons": "^2.0.0",
+    "lodash": "^4.17.21",
     "mini-css-extract-plugin": "0.11.3",
     "optimize-css-assets-webpack-plugin": "5.0.4",
     "pnp-webpack-plugin": "1.6.4",

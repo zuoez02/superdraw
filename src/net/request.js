@@ -8,7 +8,7 @@ export const BASE_URL = window.location.protocol + "//" + window.location.host;
 // base_url设置
 axios.defaults.baseURL = BASE_URL;
 // content-type头设置
-axios.defaults.headers["Content-Type"] = "application/json";
+axios.defaults.headers["Content-Type"] = "*";
 // 超时设置
 axios.defaults.timeout = 10000;
 // 拦截器设置
@@ -27,7 +27,6 @@ export function post(url, params, headers = {}) {
             url,
             data: params
         }).then(response => {
-            // 正常信息
             const data = checkErrCode(response?.data?.code);
             if(!data) {
                 return Promise.resolve(response?.data);
@@ -44,7 +43,6 @@ export function get(url, params = {}) {
             url,
             data: params
         }).then(response => {
-           // 正常信息
            const data = checkErrCode(response?.data?.code);
            if(!data) {
                return Promise.resolve(response?.data);
