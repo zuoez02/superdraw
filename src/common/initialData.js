@@ -1,5 +1,5 @@
 const initialData = {
-    appState: { viewBackgroundColor: "#fff9db", currentItemFontFamily: 1 },
+    appState: { viewBackgroundColor: "#ffffff", currentItemFontFamily: 1 },
     scrollToContent: true,
 };
 
